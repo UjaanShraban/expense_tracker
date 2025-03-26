@@ -3,7 +3,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import SortFilter from "./Sort";
 import Search from "./Search";
-
+import '../css/history.css';
 const History = () => {
   const [expenses, setExpenses] = useState([]); 
 

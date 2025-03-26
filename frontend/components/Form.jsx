@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useState } from 'react';
-
+import '../css/form.css';
 const Form = () => {
   //variable to store data
   const [data, setData] = useState({

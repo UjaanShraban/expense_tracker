@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-
+import '../css/search_sort.css';
 const Sort = ({ setExpenses }) => {
   const [isFilterVisible, setIsFilterVisible] = useState(false);
   const [sortBy, setSortBy] = useState('');

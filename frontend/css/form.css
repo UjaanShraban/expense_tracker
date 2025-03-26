@@ -1,0 +1,67 @@
+.form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    background-color: #f8fafc; /* Light background for a fresh look */
+    min-height: 70vh;
+}
+
+.form-heading {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #4f46e5; /* Primary color */
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.form-box {
+    background-color: #ffffff;
+    border: 2px solid #4f46e5;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #1a202c;
+}
+
+input, select {
+    width: 100%;
+    padding: 0.7rem;
+    border: 2px solid #4f46e5;
+    border-radius: 8px;
+    background-color: #edf2f7; /* Subtle background */
+    outline: none;
+    transition: border 0.3s ease;
+}
+
+input:focus, select:focus {
+    border-color: #4338ca; /* Slightly darker shade for focus */
+    box-shadow: 0 0 8px rgba(79, 70, 229, 0.3);
+}
+
+.submit-button {
+    width: 100%;
+    background-color: #4f46e5;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+.submit-button:hover {
+    background-color: #4338ca; /* Darker shade for hover */
+}
