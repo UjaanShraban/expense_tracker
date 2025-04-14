@@ -1,45 +1,30 @@
-import { render, screen } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
-import Home from "../components/Home";
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import Home from '../components/Home';
 
-describe("Home Component", () => {
-  test("renders the home page with title and description", () => {
+describe('Home Component', () => {
+  test('title, subtitle, and welcome message', () => {
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <Home />
-      </BrowserRouter>
+      </MemoryRouter>
     );
-
-    expect(screen.getByText(/expense tracker/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/take control of your finances/i)
-    ).toBeInTheDocument();
+    
+    expect(screen.getByText(/take control of your finances/i)).toBeInTheDocument();
+    expect(screen.getByText(/manage your expenses efficiently/i)).toBeInTheDocument();
+    expect(screen.getByText(/welcome to expense tracker/i)).toBeInTheDocument();
   });
 
-  test("renders the Get Started button with correct link", () => {
+  test('"Get Started" link', () => {
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <Home />
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
-    const linkElement = screen.getByText(/get started/i);
-    expect(linkElement).toBeInTheDocument();
-    expect(linkElement.closest("a")).toHaveAttribute("href", "/form");
-  });
-
-  test("renders welcome message", () => {
-    render(
-      <BrowserRouter>
-        <Home />
-      </BrowserRouter>
-    );
-
-    expect(
-      screen.getByText(/welcome to expense tracker/i)
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/manage your expenses efficiently/i)
-    ).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: /get started/i });
+    expect(link).toBeInTheDocument();
+    expect(link.getAttribute('href')).toBe('/form');
   });
 });

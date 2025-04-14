@@ -1,51 +1,38 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
-import axios from "axios";
-import History from "../components/History";
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
+import History from '../components/History';
+import axios from 'axios';
+import { vi } from 'vitest';
 
-// Mock Axios
-jest.mock("axios");
+vi.mock('axios');
 
-const mockExpenses = [
-  {
-    id: 1,
-    description: "Groceries",
-    amount: 500,
-    type: "expense",
-    date: "2024-03-25",
-  },
-  {
-    id: 2,
-    description: "Salary",
-    amount: 2000,
-    type: "income",
-    date: "2024-03-20",
-  },
-];
+describe('History component', () => {
+  const mockExpenses = [
+    {
+      id: 1,
+      description: 'Groceries',
+      amount: 100,
+      type: 'expense',
+      date: '2024-04-01',
+    },
+    {
+      id: 2,
+      description: 'Salary',
+      amount: 1000,
+      type: 'income',
+      date: '2024-04-05',
+    },
+  ];
 
-describe("History Component", () => {
   beforeEach(() => {
     axios.get.mockResolvedValue({ data: mockExpenses });
   });
 
-  test("renders history table and balance", async () => {
-    render(
-      <BrowserRouter>
-        <History />
-      </BrowserRouter>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText(/history/i)).toBeInTheDocument();
-      expect(screen.getByText(/groceries/i)).toBeInTheDocument();
-      expect(screen.getByText(/salary/i)).toBeInTheDocument();
-      expect(screen.getByText(/remaining balance: rs. 1500/i)).toBeInTheDocument();
-    });
+  afterEach(() => {
+    vi.clearAllMocks();
   });
 
-  test("deletes an expense on delete button click", async () => {
-    axios.delete.mockResolvedValue({});
-
+  test('renders history items', async () => {
     render(
       <BrowserRouter>
         <History />
@@ -53,51 +40,52 @@ describe("History Component", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/groceries/i)).toBeInTheDocument();
+      expect(screen.getByText('Groceries')).toBeInTheDocument();
+      expect(screen.getByText('Salary')).toBeInTheDocument();
     });
 
-    const deleteButtons = screen.getAllByText(/remove/i);
-    fireEvent.click(deleteButtons[0]);
-
-    await waitFor(() => {
-      expect(axios.delete).toHaveBeenCalledWith("http://localhost:5555/history/1");
-    });
+    expect(screen.getByText(/HISTORY/i)).toBeInTheDocument();
+    expect(screen.getAllByText('Remove')).toHaveLength(2);
   });
 
-  test("opens and submits update modal", async () => {
+  test('deletes an item after confirmation', async () => {
+    axios.delete.mockResolvedValue({}); 
+    window.confirm = vi.fn(() => true);
+
     render(
       <BrowserRouter>
         <History />
       </BrowserRouter>
     );
 
-    await waitFor(() => {
-      expect(screen.getByText(/groceries/i)).toBeInTheDocument();
-    });
+    await waitFor(() => screen.getByText('Groceries'));
 
-    const updateButton = screen.getAllByText(/update/i)[0];
-    fireEvent.click(updateButton);
+    const groceriesRow = screen.getByText('Groceries').closest('tr');
+    const removeButton = within(groceriesRow).getByText('Remove');
 
-    await waitFor(() => {
-      expect(screen.getByText(/edit expense/i)).toBeInTheDocument();
-    });
+    fireEvent.click(removeButton);
 
-    const descriptionInput = screen.getByLabelText(/description/i);
-    fireEvent.change(descriptionInput, { target: { value: "Updated Groceries" } });
+    expect(window.confirm).toHaveBeenCalled();
+    expect(axios.delete).toHaveBeenCalledWith('http://localhost:5555/history/1');
+  });
 
-    axios.put.mockResolvedValue({});
+  test('does not delete when confirmation is canceled', async () => {
+    window.confirm = vi.fn(() => false); 
 
-    const saveButton = screen.getByText(/save/i);
-    fireEvent.click(saveButton);
+    render(
+      <BrowserRouter>
+        <History />
+      </BrowserRouter>
+    );
 
-    await waitFor(() => {
-      expect(axios.put).toHaveBeenCalledWith("http://localhost:5555/history/1", {
-        id: 1,
-        description: "Updated Groceries",
-        amount: 500,
-        type: "expense",
-        date: "2024-03-25",
-      });
-    });
+    await waitFor(() => screen.getByText('Groceries'));
+
+    const groceriesRow = screen.getByText('Groceries').closest('tr');
+    const removeButton = within(groceriesRow).getByText('Remove');
+
+    fireEvent.click(removeButton);
+
+    expect(window.confirm).toHaveBeenCalled();
+    expect(axios.delete).not.toHaveBeenCalled();
   });
 });

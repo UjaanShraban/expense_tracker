@@ -1,57 +1,85 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import axios from "axios";
-import Sort from "../components/Sort";
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import Sort from '../components/Sort';
+import axios from 'axios';
+import { vi } from 'vitest';
 
-jest.mock("axios"); // Mock axios to prevent actual API calls
+// Mock axios
+vi.mock('axios');
 
-describe("Sort Component", () => {
-  let setExpensesMock;
+describe('Sort Component', () => {
+  const mockSetExpenses = vi.fn();
 
   beforeEach(() => {
-    setExpensesMock = jest.fn();
-    render(<Sort setExpenses={setExpensesMock} />);
+    vi.clearAllMocks();
   });
 
-  test("renders sort button", () => {
-    expect(screen.getByRole("button", { name: /sort/i })).toBeInTheDocument();
+  test('renders Sort button', () => {
+    render(<Sort setExpenses={mockSetExpenses} />);
+    expect(screen.getByRole('button', { name: /sort/i })).toBeInTheDocument();
   });
 
-  test("shows sorting options when button is clicked", () => {
-    fireEvent.click(screen.getByRole("button", { name: /sort/i }));
-    
-    expect(screen.getByText(/Sort By/i)).toBeInTheDocument();
-    expect(screen.getByText(/Ascending/i)).toBeInTheDocument();
-    expect(screen.getByText(/Descending/i)).toBeInTheDocument();
+  test('toggles filter options on button click', () => {
+    render(<Sort setExpenses={mockSetExpenses} />);
+    const button = screen.getByRole('button', { name: /sort/i });
+
+    fireEvent.click(button);
+    expect(screen.getByText(/apply/i)).toBeInTheDocument();
+
+    fireEvent.click(button);
+    expect(screen.queryByText(/apply/i)).not.toBeInTheDocument();
   });
 
-  test("updates state when selecting sort options", () => {
-    fireEvent.click(screen.getByRole("button", { name: /sort/i }));
+  test('handles sorting of selected options', async () => {
+    const mockResponse = {
+      data: [
+        { id: 1, description: 'food', amount: 200, type: 'expense', date: '2024-04-10' },
+      ],
+    };
+    axios.post.mockResolvedValueOnce(mockResponse);
 
-    const sortByDropdown = screen.getByRole("combobox", { name: "sortBy" });
-    const orderDropdown = screen.getByRole("combobox", { name: "order" });
+    render(<Sort setExpenses={mockSetExpenses} />);
+    fireEvent.click(screen.getByRole('button', { name: /sort/i }));
 
-    fireEvent.change(sortByDropdown, { target: { value: "amount" } });
-    fireEvent.change(orderDropdown, { target: { value: "desc" } });
-
-    expect(sortByDropdown.value).toBe("amount");
-    expect(orderDropdown.value).toBe("desc");
-  });
-
-  test("calls API and updates expenses on form submit", async () => {
-    axios.post.mockResolvedValue({ data: [{ id: 1, description: "Groceries", amount: 50 }] });
-
-    fireEvent.click(screen.getByRole("button", { name: /sort/i }));
-
-    fireEvent.change(screen.getByRole("combobox", { name: "sortBy" }), { target: { value: "amount" } });
-    fireEvent.change(screen.getByRole("combobox", { name: "order" }), { target: { value: "asc" } });
-
-    fireEvent.click(screen.getByRole("button", { name: /apply/i }));
-
-    expect(axios.post).toHaveBeenCalledWith("http://localhost:5555/history/sort", {
-      sortBy: "amount",
-      order: "asc",
+    fireEvent.change(screen.getAllByRole('combobox')[0], {
+      target: { value: 'amount' },
+    });
+    fireEvent.change(screen.getAllByRole('combobox')[1], {
+      target: { value: 'desc' },
     });
 
-    expect(setExpensesMock).toHaveBeenCalledWith([{ id: 1, description: "Groceries", amount: 50 }]);
+    fireEvent.click(screen.getByRole('button', { name: /apply/i }));
+
+    await waitFor(() => {
+      expect(axios.post).toHaveBeenCalledWith(
+        'http://localhost:5555/history/sort',
+        {
+          sortBy: 'amount',
+          order: 'desc',
+        }
+      );
+      expect(mockSetExpenses).toHaveBeenCalledWith(mockResponse.data);
+    });
+  });
+
+  test('handles errors', async () => {
+    console.error = vi.fn(); 
+    axios.post.mockRejectedValueOnce(new Error('Server error'));
+
+    render(<Sort setExpenses={mockSetExpenses} />);
+    fireEvent.click(screen.getByRole('button', { name: /sort/i }));
+
+    fireEvent.change(screen.getAllByRole('combobox')[0], {
+      target: { value: 'date' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /apply/i }));
+
+    await waitFor(() => {
+      expect(axios.post).toHaveBeenCalledWith(
+        'http://localhost:5555/history/sort',
+        expect.any(Object)
+      );
+      expect(mockSetExpenses).not.toHaveBeenCalled();
+    });
   });
 });
