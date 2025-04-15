@@ -76,7 +76,7 @@ describe('Form Component', () => {
   });
 
   test('handles axios post error', async () => {
-    console.error = vi.fn(); // suppress console error
+    console.error = vi.fn(); 
     axios.post.mockRejectedValue(new Error('Network error'));
 
     render(<Form />);

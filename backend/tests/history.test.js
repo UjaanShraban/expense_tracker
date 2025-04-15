@@ -71,6 +71,7 @@ describe('History API', () => {
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
   });
+  
   afterAll((done) => {
     const db = require('../config/db');
     db.end(() => done());
