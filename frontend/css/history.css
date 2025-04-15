@@ -117,7 +117,7 @@ td:last-child {
   font-weight: 500;
 }
 
-
+  
 /* Modal Styles */
 .modal {
     position: fixed;
@@ -168,3 +168,4 @@ td:last-child {
 .close-btn:hover {
     background-color: #dc2626;
 }
+
