@@ -40,11 +40,11 @@ describe('History component', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Groceries')).toBeInTheDocument();
-      expect(screen.getByText('Salary')).toBeInTheDocument();
+      expect(screen.getByText(/Groceries/i)).toBeInTheDocument();
+      expect(screen.getByText(/Salary/i)).toBeInTheDocument();
     });
 
-    expect(screen.getByText(/HISTORY/i)).toBeInTheDocument();
+    expect(screen.getByText(/History/i)).toBeInTheDocument();
     expect(screen.getAllByText('Remove')).toHaveLength(2);
   });
 

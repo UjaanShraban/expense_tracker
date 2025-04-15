@@ -28,7 +28,7 @@ describe('Form Component', () => {
       target: { value: 'Lunch', name: 'description' },
     });
     fireEvent.change(screen.getByLabelText(/amount/i), {
-      target: { value: '50', name: 'amount' },
+      target: { value: '200', name: 'amount' },
     });
     fireEvent.change(screen.getByLabelText(/category/i), {
       target: { value: 'expense', name: 'type' },
