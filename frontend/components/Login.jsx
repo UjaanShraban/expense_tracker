@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import '../css/auth.css';
 
-const Login = ({ setIsAuthenticated }) => {
+const Login = ({ setIsAuthenticated, setUserId, setUsername }) => {
     const [formData, setFormData] = useState({ email: "", password: "" });
     const navigate = useNavigate();
 
@@ -19,7 +19,13 @@ const Login = ({ setIsAuthenticated }) => {
 
             if (res.data.success) {
                 alert("Login successful!");
+
+                setUserId(res.data.id);
+                console.log(res.data);
+                setUsername(res.data.username);
+                // console.log(res.data.username);
                 setIsAuthenticated(true);
+
                 navigate('/');
             } else {
                 alert("Invalid email or password.");

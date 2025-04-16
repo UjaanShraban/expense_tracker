@@ -1,99 +1,60 @@
-import axios from 'axios';
-import React, { useState } from 'react';
-import '../css/form.css';
-const Form = () => {
-  //variable to store data
-  const [data, setData] = useState({
-    description: "",
-    amount: "",
-    type: "",
-    date: "",
-  });
+import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import "../css/form.css";
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setData((prev) => ({
-      ...prev,
-      [name]: name === "amount" ? Number(value) || "" : value, //change amount to number
-    }));
-  };
+const Form = ({ userId }) => {
+    const [formData, setFormData] = useState({
+        description: "",
+        amount: "",
+        type: "expense",
+        date: ""
+    });
+    const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log("Submitting data:", data);
-    setData({ description: "", amount: "", type: "", date: "" });
-    try {
-      const response = await axios.post("http://localhost:5555/history", data); //send data to server
-      console.log("Server response:", response.data);
-      alert("Expense added successfully!");
-    } catch (err) {
-      console.error("Error submitting form:", err);
-    }
-  };
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prevData) => ({ ...prevData, [name]: value }));
+    };
 
-  return (
-    <>
-    <div className="form-container">
-    <h1 className='form-heading'>Add New Expense/Income</h1>
-      <div className="form-box">
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label className="form-label" htmlFor="description">Description:</label>
-            <input
-              id="description"
-              type="text"
-              name="description"
-              value={data.description}
-              onChange={handleChange}
-              placeholder="Enter description"
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label" htmlFor="amount">Amount:</label>
-            <input
-              id="amount"
-              type="number"
-              name="amount"
-              value={data.amount}
-              onChange={handleChange}
-              placeholder="Enter amount"
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label" htmlFor="category">Category:</label>
-            <select
-              id="category"
-              name="type"
-              value={data.type}
-              onChange={handleChange}
-              required
-            >
-              <option value="" disabled>Select Type</option>
-              <option value="expense">Expense</option>
-              <option value="income">Income</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label className="form-label" htmlFor="date">Date:</label>
-            <input
-              id="date"
-              type="date"
-              name="date"
-              value={data.date}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <button type="submit" className="submit-button">
-            Add Data
-          </button>
-        </form>
-      </div>
-    </div>
-    </>
-  );
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.post(`http://localhost:5555/history/${userId}`, {
+                ...formData,
+                userId
+            });
+            alert("Transaction added!");
+            navigate("/history");
+        } catch (err) {
+            console.error(err);
+            alert("Failed to add transaction.");
+        }
+    };
+
+    return (
+        <div className="form_container">
+            <h1 className="form_title">Add Transaction</h1>
+            <form onSubmit={handleSubmit}>
+                <label>Description</label>
+                <input type="text" name="description" value={formData.description} onChange={handleChange} required />
+
+                <label>Amount</label>
+                <input type="number" name="amount" value={formData.amount} onChange={handleChange} required />
+
+                <label>Category</label>
+                <select name="type" value={formData.type} onChange={handleChange}>
+                    <option value="expense">Expense</option>
+                    <option value="income">Income</option>
+                </select>
+
+                <label>Date</label>
+                <input type="date" name="date" value={formData.date} onChange={handleChange} required />
+
+                <button type="submit" className="submit_btn">Add</button>
+            </form>
+        </div>
+    );
 };
 
 export default Form;

@@ -3,14 +3,14 @@
     display: flex;
     justify-content: center;
     gap: 2rem;
-    background-color: #1a202c; /* Dark background for contrast */
+    background-color: #1a202c; 
     padding: 1rem 0;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    border-bottom: 3px solid #4f46e5; /* Accent color for emphasis */
+    border-bottom: 3px solid #4f46e5; 
 }
 
 .navbar a {
-    color: #e2e8f0; /* Light text for contrast */
+    color: #e2e8f0; 
     text-decoration: none;
     font-weight: 600;
     font-size: 1.1rem;
@@ -25,6 +25,15 @@
 }
 
 .navbar a.active {
-    color: #4f46e5; /* Highlight active link */
+    color: #4f46e5; 
     border-bottom: 2px solid #4f46e5;
 }
+
+.username-display {
+    padding-right: 20px;
+    display: flex;
+    justify-content: right;
+    font-weight: bold;
+    color: #000;
+  }
+  
