@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-
+import '../css/search_sort.css';
 const Search = ({ setExpenses }) => {
-    const [searchTerm, setSearchTerm] = useState([]);
+    const [searchTerm, setSearchTerm] = useState();
 
     const handleSearch = async (e) => {
         e.preventDefault();

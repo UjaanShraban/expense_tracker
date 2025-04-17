@@ -1,9 +1,10 @@
 const db = require('../config/db');
 
-// GET all data
+// GET all data for a specific user
 exports.getAllHistory = (req, res) => {
-    const query = "SELECT * FROM history";
-    db.query(query, (err, data) => {
+    const userId = req.params.user_id;
+    const query = "SELECT * FROM history WHERE user_id = ?";
+    db.query(query, [userId], (err, data) => {
         if (err) return res.json(err);
         return res.json(data);
     });
@@ -11,9 +12,10 @@ exports.getAllHistory = (req, res) => {
 
 // GET data by ID
 exports.getHistoryById = (req, res) => {
-    const { id } = req.params;
-    const query = "SELECT * FROM history WHERE id = ?";
-    db.query(query, [id], (err, data) => {
+    const id = req.params.id;
+    const userId = req.params.user_id;
+    const query = "SELECT * FROM history WHERE id = ? AND user_id = ?";
+    db.query(query, [id, userId], (err, data) => {
         if (err) return res.json(err);
         return res.json(data);
     });
@@ -21,26 +23,27 @@ exports.getHistoryById = (req, res) => {
 
 // ADD new data
 exports.addHistory = (req, res) => {
-    const insert = "INSERT INTO history (`description`, `amount`, `type`, `date`) VALUES (?,?,?,?)";
+    const insert = "INSERT INTO history (description, amount, type, date, user_id) VALUES (?, ?, ?, ?, ?)";
     const values = [
-        req.body.description, 
-        req.body.amount, 
-        req.body.type, 
-        req.body.date
-        ];
+        req.body.description,
+        req.body.amount,
+        req.body.type,
+        req.body.date,
+        req.body.userId
+    ];
 
     db.query(insert, values, (err, result) => {
         if (err) return res.json({ message: "Database error", error: err });
         return res.json({ message: "Expense added successfully" });
     });
-};
+}
 
 // DELETE data
 exports.deleteHistory = (req, res) => {
-    const { id } = req.params;
-    const deleteQuery = "DELETE FROM history WHERE id = ?";
-
-    db.query(deleteQuery, [id], (err, result) => {
+    const id = req.params.id;
+    const userId = req.body.userId;
+    const deleteQuery = "DELETE FROM history WHERE id = ? AND user_id = ?";
+    db.query(deleteQuery, [id, userId], (err, result) => {
         if (err) return res.json({ message: "Database error", error: err });
         return res.json({ message: "Expense deleted successfully" });
     });
@@ -48,13 +51,12 @@ exports.deleteHistory = (req, res) => {
 
 // UPDATE data
 exports.updateHistory = (req, res) => {
-    const { id } = req.params;
-    const { description, amount, type, date } = req.body;
+    const id = req.params.id;
+    const { description, amount, type, date, userId } = req.body;
+    const formattedDate = new Date(date).toISOString().slice(0, 10);
 
-    const formattedDate = new Date(date).toISOString().slice(0, 10).replace('T', ' ');
-
-    const updateQuery = "UPDATE history SET `description` = ?, `amount` = ?, `type` = ?, `date` = ? WHERE id = ?";
-    const values = [description, amount, type, formattedDate, id];
+    const updateQuery = "UPDATE history SET `description` = ?, `amount` = ?, `type` = ?, `date` = ? WHERE id = ? AND user_id = ?";
+    const values = [description, amount, type, formattedDate, id, userId];
 
     db.query(updateQuery, values, (err, result) => {
         if (err) return res.json({ message: "Database error", error: err });
@@ -65,34 +67,31 @@ exports.updateHistory = (req, res) => {
     });
 };
 
-//SORT data
 exports.sortHistory = (req, res) => {
-    const { sortBy, order } = req.body;
+    const { sortBy, order, userId } = req.body;
 
     const SortItem = ['description', 'amount', 'type', 'date'];
     if (!SortItem.includes(sortBy)) {
         return res.json({ message: "Invalid sort field" });
     }
 
-    const sortQuery = `SELECT * FROM history ORDER BY ${sortBy} ${order}`;
+    const sortQuery = "SELECT * FROM history WHERE user_id = ? ORDER BY ${sortBy} ${order}";
 
-    db.query(sortQuery, (err, result) => {
+    db.query(sortQuery, [userId], (err, result) => {
         if (err) {
             console.error("Error fetching sorted data:", err);
             return res.json({ message: "Database error", error: err });
         }
-        console.log("sorted data:",result)
         res.json(result);
     });
 };
 
-//SEARCH data
+// SEARCH data for specific user
 exports.searchHistory = (req, res) => {
-    const searchTerm = req.body.searchTerm; 
-    console.log("searchTerm:",searchTerm);
-    const searchQuery = `SELECT * FROM history WHERE (description LIKE ? OR type LIKE ?)`;
+    const { searchTerm, userId } = req.body;
 
-    const values = [`%${searchTerm}%`, `%${searchTerm}%`];
+    const searchQuery = "SELECT * FROM history WHERE user_id = ? AND (description LIKE ? OR type LIKE ?)";
+    const values = [userId, `%${searchTerm}%`, `%${searchTerm}%`];
 
     db.query(searchQuery, values, (err, result) => {
         if (err) {
